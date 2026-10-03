@@ -1,0 +1,21 @@
+{
+  "name": "wealth-ai-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Wealth AI - Autonomous Personal Financial Intelligence & Copilot",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "start:backend": "source .venv/bin/activate && cd backend && uvicorn main:app --reload --port 8000",
+    "test:backend": "source .venv/bin/activate && python -c 'import sys; sys.path.insert(0, \"./backend\"); from app.ml.categorizer import categorizer; print(\"ML Loaded Successfully!\")'"
+  },
+  "keywords": [
+    "fintech",
+    "machine-learning",
+    "copilot",
+    "personal-finance",
+    "financial-intelligence"
+  ],
+  "author": "Harshit Thakur",
+  "license": "MIT"
+}

@@ -1,0 +1,76 @@
+name: Wealth AI CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-test:
+    name: Backend & ML Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+      - name: Run ML & API Engine Tests
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, './backend')
+          from app.ml.categorizer import categorizer
+          from app.ml.anomaly_detector import anomaly_detector
+          from app.ml.forecaster import forecaster
+          from app.ml.health_engine import health_engine
+          from app.ml.copilot_engine import copilot_engine
+          from app.database import db
+
+          # Verify ML Categorizer
+          cat, sub, conf, dist = categorizer.predict('Swiggy 438')
+          assert cat == 'Food', f'Expected Food, got {cat}'
+
+          # Verify NL parser
+          parsed = categorizer.parse_natural_language('Spent 450 on dinner with friends')
+          assert parsed['category'] == 'Food'
+          assert parsed['amount'] == 450.0
+
+          # Verify Anomaly detector
+          is_anom, score, reason = anomaly_detector.evaluate({'amount': 18500, 'category': 'Shopping', 'merchant': 'Croma'})
+          assert is_anom == True
+
+          # Verify 5-Pillar Health Engine
+          health = health_engine.calculate_health(db.get_all_transactions())
+          assert health['overall_score'] > 0
+
+          # Verify Copilot Tool resolver
+          ans = copilot_engine.answer('Can I afford a ₹20,000 phone this month?')
+          assert ans['calculations']['purchase_amount'] == 20000.0
+
+          print('All CI Backend & ML checks passed successfully!')
+          "
+
+  frontend-build:
+    name: Frontend Build & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+      - name: Build Next.js Application
+        working-directory: ./frontend
+        run: npm run build
