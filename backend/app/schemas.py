@@ -105,3 +105,40 @@ class ProactiveAlert(BaseModel):
     timestamp: str
     action_label: Optional[str] = None
     action_type: Optional[str] = None
+
+class UserProfile(BaseModel):
+    monthly_income: float = Field(default=65000.0, description="Monthly net take-home salary or income")
+    pays_rent: bool = Field(default=True, description="Whether the user pays rent")
+    rent_amount: float = Field(default=18000.0, description="Monthly rent amount (0 if not paying rent)")
+    other_fixed_bills: float = Field(default=4200.0, description="Other recurring bills (utilities, internet, EMIs)")
+    savings_goal_type: str = Field(default="Emergency Fund", description="Goal category (Emergency Fund, Home, Car, Vacation, Wealth)")
+    goal_name: str = Field(default="Emergency Reserve", description="Custom name for the financial goal")
+    target_savings_per_month: float = Field(default=15000.0, description="Target amount to save each month")
+    target_total_goal: float = Field(default=100000.0, description="Total target milestone amount")
+    savings_timeline_months: int = Field(default=12, description="Target timeline in months")
+
+class MilestoneProjection(BaseModel):
+    month: int
+    label: str
+    total_saved: float
+    goal_percentage: float
+    milestone_hit: Optional[str] = None
+
+class SavingsPlan(BaseModel):
+    monthly_income: float
+    rent_amount: float
+    other_fixed_bills: float
+    fixed_needs_total: float
+    fixed_needs_percentage: float
+    wants_allowance: float
+    wants_percentage: float
+    target_savings: float
+    savings_percentage: float
+    daily_discretionary_budget: float
+    weekly_discretionary_budget: float
+    months_to_target: int
+    projected_timeline: List[MilestoneProjection]
+    budget_breakdown: List[Dict[str, Any]]
+    plan_status: str
+    insights: List[str]
+

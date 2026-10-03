@@ -7,6 +7,7 @@ import HealthGauge from '@/components/HealthGauge';
 import SpendingChart from '@/components/SpendingChart';
 import ProactiveAlerts from '@/components/ProactiveAlerts';
 import QuickAddModal from '@/components/QuickAddModal';
+import FinancialPlanModal from '@/components/FinancialPlanModal';
 import { 
   Wallet, 
   CreditCard, 
@@ -19,7 +20,9 @@ import {
   Send,
   Loader2,
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  Target,
+  Sliders
 } from 'lucide-react';
 import { 
   fetchTransactions, 
@@ -27,15 +30,18 @@ import {
   fetchAlerts, 
   dismissAlert, 
   queryCopilot, 
-  correctCategory 
+  correctCategory,
+  fetchSavingsPlan
 } from '@/lib/api';
-import { Transaction, FinancialHealthScore, ProactiveAlert, CopilotResponse } from '@/lib/types';
+import { Transaction, FinancialHealthScore, ProactiveAlert, CopilotResponse, SavingsPlan } from '@/lib/types';
 
 export default function Dashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [health, setHealth] = useState<FinancialHealthScore | null>(null);
   const [alerts, setAlerts] = useState<ProactiveAlert[]>([]);
+  const [plan, setPlan] = useState<SavingsPlan | null>(null);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   
   // Copilot quick chat state
   const [copilotInput, setCopilotInput] = useState('');
@@ -48,14 +54,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function loadData() {
-      const [txs, h, al] = await Promise.all([
+      const [txs, h, al, p] = await Promise.all([
         fetchTransactions(),
         fetchHealthScore(),
-        fetchAlerts()
+        fetchAlerts(),
+        fetchSavingsPlan()
       ]);
       setTransactions(txs);
       setHealth(h);
       setAlerts(al);
+      setPlan(p);
     }
     loadData();
   }, []);
@@ -169,6 +177,48 @@ export default function Dashboard() {
             if (a.type === 'surge') handleCopilotAsk('Where am I overspending?');
           }}
         />
+
+        {/* Personalized Financial Plan Blueprint Banner */}
+        {plan && (
+          <div className="glass-panel rounded-2xl p-5 border border-emerald-500/25 bg-gradient-to-r from-slate-900 via-slate-900/90 to-emerald-950/30 flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-500 text-slate-950 font-bold shadow-lg shadow-emerald-500/20 shrink-0">
+                <Target className="h-6 w-6" />
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white tracking-tight">Your Personalized Financial Blueprint</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    Active Plan
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Income: <strong className="text-white font-mono">₹{plan.monthly_income.toLocaleString()}</strong> • 
+                  Rent: <strong className="text-cyan-300 font-mono">{plan.rent_amount > 0 ? `₹${plan.rent_amount.toLocaleString()}` : '₹0 (No rent)'}</strong> • 
+                  Savings Target: <strong className="text-emerald-400 font-mono">₹{plan.target_savings.toLocaleString()}/mo</strong> • 
+                  Safe Daily Burn: <strong className="text-amber-300 font-mono">₹{Math.round(plan.daily_discretionary_budget).toLocaleString()}/day</strong>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+              <button
+                onClick={() => setIsPlanModalOpen(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-xs font-semibold text-slate-200 transition-colors cursor-pointer"
+              >
+                <Sliders className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Adjust Parameters</span>
+              </button>
+              <a
+                href="/plan"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+              >
+                <span>View Full Chart & Timeline</span>
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </div>
+        )}
 
         {/* 2-Column Section: Health Engine & Velocity Forecast */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
@@ -419,6 +469,13 @@ export default function Dashboard() {
         isOpen={isQuickAddOpen}
         onClose={() => setIsQuickAddOpen(false)}
         onTransactionAdded={handleTransactionAdded}
+      />
+
+      {/* Financial Plan Questionnaire Modal */}
+      <FinancialPlanModal
+        isOpen={isPlanModalOpen}
+        onClose={() => setIsPlanModalOpen(false)}
+        onPlanUpdated={(newPlan) => setPlan(newPlan)}
       />
     </div>
   );

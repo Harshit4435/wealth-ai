@@ -10,7 +10,8 @@ import {
   HeartPulse, 
   TrendingUp, 
   Bot, 
-  PlusCircle 
+  PlusCircle,
+  Target
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -22,6 +23,7 @@ export default function Navbar({ onOpenQuickAdd }: NavbarProps) {
 
   const navLinks = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Savings Plan', href: '/plan', icon: Target },
     { name: 'Transactions', href: '/transactions', icon: Receipt },
     { name: 'Financial Health', href: '/health', icon: HeartPulse },
     { name: 'Spending Forecast', href: '/forecast', icon: TrendingUp },

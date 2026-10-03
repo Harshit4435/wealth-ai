@@ -108,4 +108,113 @@ class MemoryDatabase:
         self.proactive_alerts = [a for a in self.proactive_alerts if a["id"] != alert_id]
         return True
 
+    def get_user_profile(self) -> Dict[str, Any]:
+        if not hasattr(self, 'user_profile') or not self.user_profile:
+            self.user_profile = {
+                "monthly_income": 65000.0,
+                "pays_rent": True,
+                "rent_amount": 18000.0,
+                "other_fixed_bills": 4200.0,
+                "savings_goal_type": "Emergency Fund",
+                "goal_name": "Emergency Reserve",
+                "target_savings_per_month": 15000.0,
+                "target_total_goal": 100000.0,
+                "savings_timeline_months": 12
+            }
+        return self.user_profile
+
+    def update_user_profile(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        curr = self.get_user_profile()
+        curr.update(data)
+        self.user_profile = curr
+        return curr
+
+    def generate_savings_plan(self) -> Dict[str, Any]:
+        profile = self.get_user_profile()
+        income = float(profile.get("monthly_income", 65000.0))
+        pays_rent = profile.get("pays_rent", True)
+        rent = float(profile.get("rent_amount", 0.0)) if pays_rent else 0.0
+        other_bills = float(profile.get("other_fixed_bills", 4200.0))
+        target_savings = float(profile.get("target_savings_per_month", 15000.0))
+        total_goal = float(profile.get("target_total_goal", 100000.0))
+        
+        # Fixed needs includes rent + utilities + base groceries (estimated at ~₹6,000)
+        base_living = 6000.0
+        fixed_needs_total = rent + other_bills + base_living
+        
+        # Wants allowance is the remaining discretionary buffer
+        wants_allowance = max(0.0, income - fixed_needs_total - target_savings)
+        daily_discretionary = round(wants_allowance / 30.0, 2)
+        weekly_discretionary = round(daily_discretionary * 7.0, 2)
+        
+        fixed_pct = round((fixed_needs_total / income * 100.0), 1) if income > 0 else 0
+        savings_pct = round((target_savings / income * 100.0), 1) if income > 0 else 0
+        wants_pct = round(max(0.0, 100.0 - fixed_pct - savings_pct), 1)
+        
+        # Months to reach overall milestone
+        import math
+        months_to_target = math.ceil(total_goal / target_savings) if target_savings > 0 else 12
+        
+        # Timeline milestones
+        timeline = []
+        milestone_months = [1, 3, 6, 9, 12, 18, 24]
+        for m in milestone_months:
+            total_saved = m * target_savings
+            goal_pct = min(100.0, round((total_saved / total_goal * 100.0), 1)) if total_goal > 0 else 100.0
+            hit_note = None
+            if total_saved >= total_goal and (m - 1) * target_savings < total_goal:
+                hit_note = f"🎯 {profile.get('goal_name', 'Goal')} Fully Achieved!"
+            elif m == 3 and total_saved >= 40000:
+                hit_note = "🛡️ 1-Month Living Runway Reached"
+            elif m == 6 and total_saved >= 90000:
+                hit_note = "⭐ 3-Month Emergency Shield Complete"
+
+            timeline.append({
+                "month": m,
+                "label": f"Month {m}",
+                "total_saved": total_saved,
+                "goal_percentage": goal_pct,
+                "milestone_hit": hit_note
+            })
+
+        budget_breakdown = [
+            {"category": "Essential Needs", "amount": fixed_needs_total, "percentage": fixed_pct, "color": "emerald", "items": f"Rent (₹{int(rent):,}) + Bills (₹{int(other_bills):,}) + Staples (₹{int(base_living):,})"},
+            {"category": "Savings Target", "amount": target_savings, "percentage": savings_pct, "color": "cyan", "items": f"{profile.get('goal_name', 'Goal')} @ ₹{int(target_savings):,}/mo"},
+            {"category": "Discretionary Wants", "amount": wants_allowance, "percentage": wants_pct, "color": "amber", "items": f"Dining, shopping, leisure (₹{int(daily_discretionary):,}/day)"}
+        ]
+
+        status = "Optimal"
+        insights = []
+        
+        rent_ratio = (rent / income * 100.0) if income > 0 else 0
+        if rent_ratio > 35.0:
+            insights.append(f"Housing rent consumes {round(rent_ratio)}% of take-home pay (ideal is <30%).")
+        elif not pays_rent:
+            insights.append("Zero rent obligation! You can allocate higher capital to investments & compounding.")
+        else:
+            insights.append(f"Rent is at a healthy {round(rent_ratio)}% of monthly take-home income.")
+
+        insights.append(f"At ₹{int(target_savings):,}/mo, you will achieve your full ₹{int(total_goal):,} {profile.get('goal_name', 'goal')} in approximately {months_to_target} months.")
+        insights.append(f"To guarantee this savings target, maintain non-essential daily spending within ₹{int(daily_discretionary):,}/day.")
+
+        return {
+            "monthly_income": income,
+            "rent_amount": rent,
+            "other_fixed_bills": other_bills,
+            "fixed_needs_total": fixed_needs_total,
+            "fixed_needs_percentage": fixed_pct,
+            "wants_allowance": wants_allowance,
+            "wants_percentage": wants_pct,
+            "target_savings": target_savings,
+            "savings_percentage": savings_pct,
+            "daily_discretionary_budget": daily_discretionary,
+            "weekly_discretionary_budget": weekly_discretionary,
+            "months_to_target": months_to_target,
+            "projected_timeline": timeline,
+            "budget_breakdown": budget_breakdown,
+            "plan_status": status,
+            "insights": insights
+        }
+
 db = MemoryDatabase()
+
