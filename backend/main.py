@@ -4,7 +4,7 @@ FastAPI Backend Application Entrypoint
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.routers import transactions, analytics, health, forecast, copilot, alerts, profile
+from app.routers import transactions, analytics, health, forecast, copilot, alerts, profile, project
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -31,6 +31,7 @@ app.include_router(forecast.router, prefix=settings.API_PREFIX)
 app.include_router(copilot.router, prefix=settings.API_PREFIX)
 app.include_router(alerts.router, prefix=settings.API_PREFIX)
 app.include_router(profile.router, prefix=settings.API_PREFIX)
+app.include_router(project.router, prefix=settings.API_PREFIX)
 
 @app.get("/")
 def root():

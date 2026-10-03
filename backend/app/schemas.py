@@ -142,3 +142,49 @@ class SavingsPlan(BaseModel):
     plan_status: str
     insights: List[str]
 
+class DailyDayRecord(BaseModel):
+    day: int
+    date_label: str
+    expense_cap: float
+    actual_spent: float
+    status: str  # 'within_budget', 'overspent', 'upcoming'
+    overspent_amount: float = 0.0
+
+class DailyExpenseEntry(BaseModel):
+    day: int = Field(default=1, description="Day of month")
+    amount: float = Field(..., description="Actual amount spent on this day")
+    note: Optional[str] = "Daily expense"
+
+class ProjectPlanCreate(BaseModel):
+    project_name: str = Field(default="My Financial Blueprint", description="Project or Goal Name")
+    monthly_income: float = Field(default=65000.0, description="Monthly Take-home income")
+    pays_rent: bool = Field(default=True, description="Whether user pays rent")
+    rent_amount: float = Field(default=18000.0, description="Monthly rent amount")
+    other_fixed_bills: float = Field(default=4200.0, description="Utilities, EMIs, Recurring bills")
+    target_monthly_savings: float = Field(default=15000.0, description="Amount wanted to save per month")
+    target_total_milestone: float = Field(default=100000.0, description="Total milestone target")
+    total_months: int = Field(default=12, description="Target timeline in months")
+
+class ProjectPlan(BaseModel):
+    id: str
+    project_name: str
+    monthly_income: float
+    rent_amount: float
+    other_fixed_bills: float
+    fixed_needs_total: float
+    target_monthly_savings: float
+    target_total_milestone: float
+    total_months: int
+    wants_monthly_pool: float
+    base_daily_allowance: float
+    current_daily_allowance: float
+    total_spent_this_month: float
+    total_overspent_this_month: float
+    remaining_days_in_month: int
+    days_data: List[DailyDayRecord]
+    next_month_adjusted_target: float
+    future_months_projections: List[Dict[str, Any]]
+    rebalancing_message: Optional[str] = None
+    status: str
+
+

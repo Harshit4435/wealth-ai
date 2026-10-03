@@ -50,3 +50,16 @@ def get_analytics_summary() -> Dict[str, Any]:
         "category_breakdown": categories_list,
         "total_transactions": len(txs)
     }
+
+@router.post("/track-visit")
+def track_visitor(payload: Dict[str, Any]) -> Dict[str, Any]:
+    return db.log_visit(payload)
+
+@router.post("/track-event")
+def track_event(payload: Dict[str, Any]) -> Dict[str, Any]:
+    return db.log_event(payload)
+
+@router.get("/telemetry")
+def get_telemetry() -> Dict[str, Any]:
+    return db.get_telemetry_summary()
+

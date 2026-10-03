@@ -8,6 +8,7 @@ import SpendingChart from '@/components/SpendingChart';
 import ProactiveAlerts from '@/components/ProactiveAlerts';
 import QuickAddModal from '@/components/QuickAddModal';
 import FinancialPlanModal from '@/components/FinancialPlanModal';
+import Link from 'next/link';
 import { 
   Wallet, 
   CreditCard, 
@@ -22,7 +23,8 @@ import {
   Sparkles,
   AlertTriangle,
   Target,
-  Sliders
+  Sliders,
+  FolderPlus
 } from 'lucide-react';
 import { 
   fetchTransactions, 
@@ -120,13 +122,23 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <button
-            onClick={() => setIsQuickAddOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>AI Quick Add ("Spent 450 on...")</span>
-          </button>
+          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+            <Link
+              href="/project"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/30 text-emerald-300 hover:text-white hover:bg-emerald-950/40 text-xs font-semibold shadow-md transition-all self-start sm:self-auto"
+            >
+              <FolderPlus className="h-4 w-4 text-emerald-400" />
+              <span>Add a New Project</span>
+            </Link>
+
+            <button
+              onClick={() => setIsQuickAddOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>AI Quick Add (&quot;Spent 450 on...&quot;)</span>
+            </button>
+          </div>
         </div>
 
         {/* 4 Core KPIs */}

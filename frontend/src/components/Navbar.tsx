@@ -11,7 +11,8 @@ import {
   TrendingUp, 
   Bot, 
   PlusCircle,
-  Target
+  Target,
+  FolderPlus
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -23,6 +24,7 @@ export default function Navbar({ onOpenQuickAdd }: NavbarProps) {
 
   const navLinks = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Add a new project', href: '/project', icon: FolderPlus, highlight: true },
     { name: 'Savings Plan', href: '/plan', icon: Target },
     { name: 'Transactions', href: '/transactions', icon: Receipt },
     { name: 'Financial Health', href: '/health', icon: HeartPulse },
@@ -60,14 +62,19 @@ export default function Navbar({ onOpenQuickAdd }: NavbarProps) {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm font-semibold'
+                    : link.highlight
+                      ? 'text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 border border-emerald-500/30 shadow-sm shadow-emerald-500/10'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                 }`}
               >
-                <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-emerald-400' : link.highlight ? 'text-emerald-400' : 'text-slate-400'}`} />
                 {link.name}
+                {link.highlight && !isActive && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+                )}
               </Link>
             );
           })}
